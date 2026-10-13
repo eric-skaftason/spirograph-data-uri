@@ -1,0 +1,111 @@
+<body>
+    <h1>Spirograph</h1>
+    
+    <canvas></canvas>
+
+    <div class="controls">
+        <button id="render">Render</button>
+        <p>Rolling circle radius as a % of larger circle</p>
+        <input type="range" min="1" max="100" value="50" class="slider" id="radius_slider"> <span id="radius_label">50</span>
+
+        <p>Proximity of Pen to Radius of inner circle</p>
+        <input type="range" min="1" max="100" value="100" class="slider" id="pen_pos_slider"> <span id="pen_pos_label">100</span>
+
+        <p>Rotations around larger circle</p>
+        <input type="range" min="1" max="100" value="1" class="slider" id="rotations_slider"> <span id="rotations_label">1</span>
+    </div>
+    
+    <style>
+        body {
+            background-color: black;
+            color: white;
+        }
+
+        canvas {
+            width: 400px;
+            height: 400px;
+
+            outline: 1px solid white;
+        }
+
+        button {
+            width: 400px;
+            height: 30px;
+            
+            background-color: black;
+            color: white;
+
+            cursor: pointer;
+        }
+        
+    </style>
+    <script>
+
+        const canvas = document.querySelector("canvas");
+        canvas.width = 400;
+        canvas.height = 400;
+
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "rgb(255, 255, 255)";
+
+        // theta - angle
+        // radius_external - radius of larger circle
+        // radius_internal - radius of internal rolling circle
+        // pen_pos - position of pen within smaller circle: 0 - centre, 1 - edge
+        
+        let x_offset = 200;
+        let y_offset = 200;
+
+        let radius_external = 100;
+        let radius_internal = 20;
+        let pen_pos = 1;
+        let rotations = 1;
+
+        const radius_slider = document.querySelector('#radius_slider');
+        radius_slider.addEventListener('input', () => {
+            document.querySelector('#radius_label').innerText = radius_slider.value;
+
+            radius_internal = radius_external * radius_slider.value / 100;
+        });
+
+        const pen_pos_slider = document.querySelector('#pen_pos_slider');
+        pen_pos_slider.addEventListener('input', () => {
+            document.querySelector('#pen_pos_label').innerText = pen_pos_slider.value;
+
+            pen_pos = pen_pos_slider.value / 100;
+        });
+
+        const rotations_slider = document.querySelector('#rotations_slider');
+        rotations_slider.addEventListener('input', () => {
+            document.querySelector('#rotations_label').innerText = rotations_slider.value;
+
+            rotations = rotations_slider.value;
+        });
+
+
+        document.querySelector('#render').addEventListener('click', () => {
+            render();
+        });
+        
+        function getX(theta) {
+            return Math.floor((radius_external - radius_internal) * Math.cos(theta) + radius_internal * pen_pos * Math.cos((radius_external - radius_internal) * theta / radius_internal) + x_offset);
+        }
+        function getY(theta) {
+            return Math.floor((radius_external - radius_internal) * Math.sin(theta) - radius_internal * pen_pos * Math.sin((radius_external - radius_internal) * theta / radius_internal) + y_offset);
+        }
+
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let theta = 0; theta < rotations * 2 * Math.PI; theta += Math.PI / 1000) {
+                const x = getX(theta);
+                const y = getY(theta);
+
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+        
+        render();        
+
+    </script>
+</body>
